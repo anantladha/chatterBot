@@ -15,6 +15,13 @@ class Statement(models.Model):
         max_length=255
     )
 
+    conversation = models.ForeignKey(
+        'Conversation',
+        related_name='statements',
+        blank=True,
+        null=True
+    )
+
     created_at = models.DateTimeField(
         default=timezone.now,
         help_text='The date and time that this statement was created at.'
@@ -146,3 +153,12 @@ class Response(models.Model):
             statement if len(statement) <= 20 else statement[:17] + '...',
             response if len(response) <= 40 else response[:37] + '...'
         )
+
+
+class Conversation(models.Model):
+    """
+    A sequence of statements representing a conversation.
+    """
+
+    def __str__(self):
+        return str(self.id)
