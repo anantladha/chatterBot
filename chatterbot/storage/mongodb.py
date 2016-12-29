@@ -103,9 +103,6 @@ class MongoDatabaseAdapter(StorageAdapter):
         # The mongo collection of statement documents
         self.statements = self.database['statements']
 
-        # Set a requirement for the text attribute to be unique
-        self.statements.create_index('text', unique=True)
-
         self.base_query = Query()
 
     def count(self):
@@ -211,6 +208,7 @@ class MongoDatabaseAdapter(StorageAdapter):
         from pymongo.errors import BulkWriteError
 
         force = kwargs.get('force', False)
+
         # Do not alter the database unless writing is enabled
         if force or not self.read_only:
             data = statement.serialize()
