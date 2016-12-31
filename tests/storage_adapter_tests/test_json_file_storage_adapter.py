@@ -95,16 +95,12 @@ class JsonFileStorageAdapterTestCase(JsonAdapterTestCase):
         )
 
         # Update the statement value
-        statement.add_response(
-            Response("New response")
-        )
+        statement.in_response_to = Statement('New response')
         self.adapter.update(statement)
 
         # Check that the values have changed
         found_statement = self.adapter.find(statement.text)
-        self.assertEqual(
-            len(found_statement.in_response_to), 1
-        )
+        self.assertEqual(found_statement.in_response_to, statement.in_response_to)
 
     def test_get_random_returns_statement(self):
         statement = Statement("New statement")
@@ -158,17 +154,20 @@ class JsonFileStorageAdapterTestCase(JsonAdapterTestCase):
         self.assertEqual(len(response.in_response_to), 2)
 
     def test_getting_and_updating_statement(self):
-        statement = Statement("Hi")
+        statement1 = Statement('Hi', in_response_to=Statement('Hello'))
+        statement2 = Statement('Hi', in_response_to=Statement('Hello'))
         self.adapter.update(statement)
 
-        statement.add_response(Response("Hello"))
-        statement.add_response(Response("Hello"))
-        self.adapter.update(statement)
+        self.adapter.update(statement1)
+        self.adapter.update(statement2)
 
-        response = self.adapter.find(statement.text)
+        results = self.adapter.filter(statement.text)
 
-        self.assertEqual(len(response.in_response_to), 1)
-        self.assertEqual(response.in_response_to[0].occurrence, 2)
+        self.assertEqual(len(results), 2)
+        self.assertEqual(results[0].text = statement1.text)
+        self.assertEqual(results[1].text = statement2.text)
+        self.assertEqual(results[0].in_response_to = statement1.in_response_to)
+        self.assertEqual(results[1].in_response_to = statement2.in_response_to)
 
     def test_deserialize_responses(self):
         response_list = [
@@ -418,19 +417,15 @@ class ReadOnlyJsonFileStorageAdapterTestCase(JsonAdapterTestCase):
         self.assertEqual(statement_found, None)
 
     def test_update_does_not_modify_existing_statement(self):
-        statement = Statement("New statement")
+        statement = Statement('New statement')
         self.adapter.update(statement)
 
         self.adapter.read_only = True
 
-        statement.add_response(
-            Response("New response")
-        )
+        statement.in_response_to = Statement('New response')
 
         self.adapter.update(statement)
 
-        statement_found = self.adapter.find("New statement")
+        statement_found = self.adapter.find('New statement')
         self.assertEqual(statement_found.text, statement.text)
-        self.assertEqual(
-            len(statement_found.in_response_to), 0
-        )
+        self.assertEqual(statement_found.in_response_to), None)
